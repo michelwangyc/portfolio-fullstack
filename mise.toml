@@ -1,0 +1,32 @@
+[tools]
+python = "3.11"
+node = "20"
+
+[tasks.venv-create]
+description = "Create Python virtual environment"
+run = "python -m venv .venv"
+
+[tasks.inst]
+description = "Install all dependencies"
+run = """
+if [ ! -d .venv ]; then python -m venv .venv; fi
+. .venv/bin/activate && pip install -r requirements.txt
+pnpm install
+"""
+
+[tasks.next-dev]
+description = "🌐 Start Next.js development server"
+run = "next dev"
+
+[tasks.fastapi-dev]
+description = "⚙️ Start FastAPI development server"
+run = ". .venv/bin/activate && python -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000"
+
+[tasks.kill]
+description = "Kill old dev servers"
+run = "lsof -ti :3000 | xargs kill -9 2>/dev/null; lsof -ti :8000 | xargs kill -9 2>/dev/null; true"
+
+[tasks.dev]
+description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
+run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
